@@ -1,6 +1,8 @@
 ## blind
 
-Late partial binding for templated function objects in C++. There are two interpretations of `blind`: one is that it blindly binds arguments to a function, the other is that idenfitifcation of the version of the fucntion being called happens at call time (late), and `blind` is more readable than `lbind` for late bind. Don't worry if you havn't studied enough linguistics to understand the last one. It has been designed to work as a seamless replacement for `bind` (yes, your `std::placeholders` will work just fine).
+Late partial binding for templated function objects in C++. There are two interpretations of `blind`: one is that it blindly binds arguments to a function, the other is that idenfitifcation of the version of the fucntion being called happens at call time (late), and `blind` is more readable than `lbind` for late bind. Don't worry if you haven't studied enough linguistics to understand the last one.
+
+It has been designed to work as a seamless replacement for `bind` (yes, your `std::placeholders` will work just fine).
 
 
 ### Raison d'être
@@ -40,7 +42,7 @@ auto sort_vec = blind(BLIND_FUNC(sort), begin(vec), end(vec));
 sort_vec(gt); // vec is now sorted largest to smallest (gt order).
 sort_vec();   // vec is now sorted in natural order (smallest to largest).
 ```
-The function `blind` and the preprocessing macro BLIND_FUNC are the main contributions of this single header library.
+The function `blind` and the preprocessing macro `BLIND_FUNC` are the main contributions of this single header library.
 
 
 ### Gotchas
