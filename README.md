@@ -16,11 +16,11 @@ To sort `vec` in the natural order, we just leave out the ordering predicate:
 sort(begin(vec), end(vec));
 ```
 
-Now, if we wanted to have a function that sorted `vec` given a predicate (or in natural order if no predicate is provided), we might think that we could bind the first two arguments of sort to the `begin` and `end` or `vec`:
+Now, if we wanted to have a function that sorted `vec` given a predicate (or in natural order if no predicate is provided), we might think that we could `bind` the first two arguments of sort to the `begin` and `end` of `vec`:
 ```c++
 auto sort_vec = bind(sort, begin(vec), end(vec));
 ```
-This will, however, not work, since `bind` needs to know the precis function to call, which isn't well defined until we know which sorting predicate we want to use. The precis function isn't know until call time. We can try to work around this using a variadic lambda that forwards its parameters to `sort`, bind `begin` and `end` of `vec` to this function, and call the bound function with our custom sorting predicate:
+This will, however, not work, since `bind` needs to know the precis function to call, which isn't well defined until we know which sorting predicate we want to use. The precise function isn't know until call time. We can try to work around this using a variadic lambda that forwards its parameters to `sort`, then bind `begin` and `end` of `vec` to this new function, and call the bound function with our custom sorting predicate:
 ```c++
 auto my_sort = [](auto&&... args) { sort(std::forward<decltype(args)>(args)); };
 auto sort_vec = bind(my_sort, begin(vec), end(vec));
@@ -40,11 +40,12 @@ auto sort_vec = blind(BLIND_FUNC(sort), begin(vec), end(vec));
 sort_vec(gt); // vec is now sorted largest to smallest (gt order).
 sort_vec();   // vec is now sorted in natural order (smallest to largest).
 ```
+The function `blind` and the preprocessing macro BLIND_FUNC are the main contributions of this single header library.
 
 
 ### Gotchas
 
-Calling `blind` will (just like calling `bind`) store a copy of the bound arguments. If you need a reference for semantic reasons (for example because the standard streams cannot be copied), or for efficiency reasons (for example bacause a constant reference to that huge object is much faster than makign a copy), you can use [`ref`](http://www.cplusplus.com/reference/functional/ref) and [`cref`](http://www.cplusplus.com/reference/functional/cref) to instead store a reference (`_wrapper`, which both `bind` and `blind` can handle).
+Calling `blind` will (just like calling `bind`) store a copy of the bound arguments (and of the function (pointer)). If you need a reference for semantic reasons (for example because the standard streams cannot be copied), or for efficiency reasons (for example bacause passing a constant reference to a huge object is much faster than makign a copy), you can use [`ref`](http://www.cplusplus.com/reference/functional/ref) and [`cref`](http://www.cplusplus.com/reference/functional/cref) to instead store a reference (`_wrapper`, which both `bind` and `blind` can handle).
 ```c++
 // Contrived example
 vector<int> vec(10);
