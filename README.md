@@ -5,16 +5,13 @@ Late partial binding for templated function objects in C++. There are two interp
 
 ### Raison d'être
 
-Let's say we want to use the standard library `sort` function to sort some collections in reverse order. We can easily define a general purpose comaprison function using generic lambdas:
+Let's say we want to use the standard library `sort` function to sort a vector different ways. We can easily define a general purpose comaprison function for reverse sorting using generic lambdas:
 ```c++
 const auto gt = [](auto&& a, auto&& b) { return a > b; };
-```
-If we have a vector of integers, we can sort it in reverse order using `gt`:
-```c++
 vector<int> vec{ 1, 2, 3, 4 };
 sort(begin(vec), enc(vec), gt);
 ```
-To sort `vec` in the natural order, we can just leave out the ordering predicate:
+To sort `vec` in the natural order, we just leave out the ordering predicate:
 ```c++
 sort(begin(vec), end(vec));
 ```
