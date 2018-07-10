@@ -36,7 +36,7 @@ auto my_sort = [](auto&&... args) { sort(std::forward<decltype(args)>(args)); };
 auto sort_vec = blind(my_sort, begin(vec), end(vec));
 sort_vec(gt);
 ```
-... will compile (under C++14) and work just as expected. And there is a convenient preprocessor macro to go from `sort` to `my_sort` more easily:
+... will compile (under C++14) and work just as expected. And there is a convenient preprocessor macro to go from `sort` to `my_sort` more easily (including perfect forwarding of the return value, which I ellided from the above example for brevity):
 ```c++
 auto sort_vec = blind(BLIND_FUNC(sort), begin(vec), end(vec));
 sort_vec(gt); // vec is now sorted largest to smallest (gt order).
@@ -47,7 +47,7 @@ The function `blind` and the preprocessing macro `BLIND_FUNC` are the main contr
 
 ### Gotchas
 
-Calling `blind` will (just like calling `bind`) store a copy of the bound arguments (and of the function (pointer)). If you need a reference for semantic reasons (for example because the standard streams cannot be copied), or for efficiency reasons (for example bacause passing a constant reference to a huge object is much faster than makign a copy), you can use [`ref`](http://www.cplusplus.com/reference/functional/ref) and [`cref`](http://www.cplusplus.com/reference/functional/cref) to instead store a reference (`_wrapper`, which both `bind` and `blind` can handle).
+Calling `blind` will (just like calling `bind`) store a copy of the bound arguments (and of the function (pointer)). If you need a reference for semantic reasons (for example because the standard streams cannot be copied), or for efficiency reasons (for example bacause passing a constant reference to a huge object is much faster than making a copy), you can use [`ref`](http://www.cplusplus.com/reference/functional/ref) and [`cref`](http://www.cplusplus.com/reference/functional/cref) to instead store a reference (`_wrapper`, which both `bind` and `blind` can handle).
 ```c++
 // Contrived example
 vector<int> vec(10);
