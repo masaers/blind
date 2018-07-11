@@ -44,6 +44,8 @@ sort_vec();   // vec is now sorted in natural order (smallest to largest).
 ```
 The function `blind` and the preprocessing macro `BLIND_FUNC` are the main contributions of this single header library.
 
+Obviously, there is no need for `BLIND_FUNC` if you write your own variadic, overloaded, function objects; it's only for adapting existing functions.
+
 
 ### Gotchas
 
