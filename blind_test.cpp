@@ -51,8 +51,8 @@ int main(const int argc, const char** argv) {
   {
     ostringstream os;
     const auto p = blind(BLIND_FUNC(print), ref(os));
-    p(1, 1.0, '1', "1");
-    assert(os.str() == "1111");
+    p(1, 1.0, '1', "1") << 2;
+    assert(os.str() == "11112");
   }
   {
     vector<int> vec{ 1, 2, 3, 4 };
