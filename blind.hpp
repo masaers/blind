@@ -54,7 +54,7 @@ namespace com { namespace masaers { namespace blind {
     struct placeheld_in<I, H, Rest...>
     : std::integral_constant<bool, std::is_placeholder<H>::value - 1 == I || placeheld_in<I, Rest...>::value>
     {};
-    // The _seq predicate figures out the list of arguments to a
+    // The _arg_seq predicate figures out the list of arguments to a
     // blind function call as offsets into the concatenated range of
     // bound (N0, T0...) and provided (N1, T1...) arguments. It
     // builds the list from right to left.
@@ -96,8 +96,8 @@ namespace com { namespace masaers { namespace blind {
       typedef std::index_sequence<S...> type;
     };
 
-    // Since the _seq predicate is a bit clunky to use, this nicer
-    // version is provided that derives the correct _seq to use, and
+    // Since the _arg_seq predicate is a bit clunky to use, this nicer
+    // version is provided that derives the correct _arg_seq to use, and
     // inherits from the calculated index_sequence.
     template<typename T0, typename... T1>
     struct arg_seq : public _arg_seq<typename std::decay<T0>::type,
