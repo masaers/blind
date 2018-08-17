@@ -1,28 +1,28 @@
-#ifndef COM_MASAERS_BLIND_HPP
-#define COM_MASAERS_BLIND_HPP
+#ifndef COM_MASAERS_BLIND_BLIND_HPP
+#define COM_MASAERS_BLIND_BLIND_HPP
 #include <tuple>
 #include <functional>
 #include <iostream>
 
 namespace com { namespace masaers { namespace blind {
-
+  
   template<typename, typename...> class blind_t;
   /**
   This is the magic function that you will use to (dazzle and) blind.
   */
   template<typename Func, typename... Args>
-  inline blind_t<Func, Args...> blind(Func&& func, Args&&... args) {
+  inline auto blind(Func&& func, Args&&... args) {
     return blind_t<Func, Args...>(std::forward<Func>(func), std::forward<Args>(args)...);
   }
-
+  
   /**
   This macro takes a collection of functions with the same name and
   produces a single lambda closure that can be used to call any of them.
   */
   #define BLIND_FUNC(func_name) [](auto&&... x) -> decltype(auto) { return func_name (std::forward<decltype(x)>(x)...); }
-
-
-
+  
+  
+  
   namespace detail {
     // Correct template instantiateion requires reference_wrappers
     // to be unwrapped.
