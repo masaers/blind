@@ -36,7 +36,7 @@ auto my_sort = [](auto&&... args) { sort(std::forward<decltype(args)>(args)); };
 auto sort_vec = blind(my_sort, begin(vec), end(vec));
 sort_vec(gt);
 ```
-... will compile (under C++14) and work just as expected. And there is a convenient preprocessor macro to go from `sort` to `my_sort` more easily (including perfect forwarding of the return value, which I ellided from the above example for brevity):
+... will compile (under C++14) and work just as expected. And there is a convenient preprocessor macro to go from `sort` to `my_sort` more easily (including perfect forwarding of the return value, which I elided from the above example for brevity):
 ```c++
 auto sort_vec = blind(BLIND_FUNC(sort), begin(vec), end(vec));
 sort_vec(gt); // vec is now sorted largest to smallest (gt order).
