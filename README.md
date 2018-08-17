@@ -1,6 +1,6 @@
 ## blind
 
-Late partial binding for templated function objects in C++. There are two interpretations of `blind`: one is that it blindly binds arguments to a function, the other is that idenfitifcation of the version of the fucntion being called happens at call time (late), and `blind` is more readable than `lbind` for late bind. Don't worry if you haven't studied enough linguistics to understand the last one.
+Late partial binding for templated function objects in C++. There are two interpretations of the name `blind`: one is that it blindly binds arguments to a function, the other is that idenfitifcation of the version of the function being called happens at call time (late), and `blind` is more readable than `lbind` for late bind. Don't worry if you haven't studied enough linguistics to understand the last one.
 
 It has been designed to work as a seamless replacement for `bind` (yes, your `std::placeholders` will work just fine).
 
