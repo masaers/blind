@@ -1,3 +1,5 @@
+#ifndef COM_MASAERS_BLIND_HPP
+#define COM_MASAERS_BLIND_HPP
 #include <tuple>
 #include <functional>
 #include <iostream>
@@ -165,3 +167,4 @@ namespace com { namespace masaers { namespace blind {
 
 }}} // namespace com::masaers::blind
 
+#endif
