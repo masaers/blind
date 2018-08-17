@@ -19,10 +19,25 @@ std::ostream& print(std::ostream& os, H&& h, Rest&&... rest) {
   return print(os, std::forward<Rest>(rest)...);
 }
 
+struct foo {
+  void operator()(int delta,       int&  x) const { x += delta; }
+  int  operator()(int delta, const int&  x) const { return x + delta; }
+  int  operator()(int delta,       int&& x) const { return x + delta; }
+};
+
 int main(const int argc, const char** argv) {
   using namespace std;
   using namespace com::masaers::blind;
   using namespace std::placeholders;
+
+  {
+    const auto f = blind(foo(), 1);
+    int i = 2;
+    int j = f(cref(i));
+    f(i);
+    assert(i == 3);
+    assert(j == 3);
+  }
 
   {
     const auto rsort = blind(BLIND_FUNC(sort), _1, _2, [](auto&& a, auto&& b) { return a > b; });

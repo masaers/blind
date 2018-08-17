@@ -19,19 +19,29 @@ namespace com { namespace masaers { namespace blind {
   This macro takes a collection of functions with the same name and
   produces a single lambda closure that can be used to call any of them.
   */
-  #define BLIND_FUNC(func_name) [](auto&&... x) -> decltype(func_name (std::forward<decltype(x)>(x)...)) { return func_name (std::forward<decltype(x)>(x)...); }
+  #define BLIND_FUNC(func_name) [](auto&&... x) -> decltype(auto) { return func_name (std::forward<decltype(x)>(x)...); }
 
 
 
   namespace detail {
-    // Correct template instantiateion requires reference_wrappers to be unwrapped.
+    // Correct template instantiateion requires reference_wrappers
+    // to be unwrapped.
     template<typename T> inline constexpr T& unwrap(const std::reference_wrapper<T>&  x) { return x.get(); }
     template<typename T> inline constexpr T& unwrap(      std::reference_wrapper<T>&  x) { return x.get(); }
     template<typename T> inline constexpr T& unwrap(      std::reference_wrapper<T>&& x) { return x.get(); }
     template<typename T> inline constexpr T  unwrap(                             T && x) { return std::forward<T>(x); }
 
-    // Predicate (helper) to determine the offset of a bound argument in the final
-    // argument list.
+    // A version of std::get that is guaranteed to return the exact
+    // type stored in the tuple, which may very well involve
+    // the (elided) copy construction of stored values.
+    template<std::size_t I, typename Tuple>
+    inline constexpr typename std::tuple_element<I, typename std::remove_reference<Tuple>::type>::type
+    forward_get(Tuple&& t) {
+      return static_cast<typename std::tuple_element<I, typename std::remove_reference<Tuple>::type>::type>(std::get<I>(t));
+    }
+
+    // Predicate (helper) to determine the offset of a bound argument
+    // in the final argument list.
     template<std::size_t I, typename T, std::size_t Offset, std::size_t Size> struct _arg_offset
     : std::conditional<std::is_placeholder<T>::value != 0,
                        std::integral_constant<std::size_t, Offset + std::is_placeholder<T>::value - 1>,
@@ -109,6 +119,22 @@ namespace com { namespace masaers { namespace blind {
                                      >::type
     {};
 
+    // Applies a tuple of arguments to a provided function in a given order.
+    template<typename Func, typename Tuple, std::size_t... I>
+    inline constexpr decltype(auto) call_with(Func&& f, Tuple&& t, std::index_sequence<I...>) {
+      return f(detail::forward_get<I>(t)...);
+    }
+
+    // Merge a tuple of arguments possibly containing place holders with
+    // a list of additional arguments into an effective argument list and
+    // apply that list to a function.
+    template<typename Func, typename Tuple, typename... Args, std::size_t... I>
+    inline constexpr decltype(auto)
+    call_with_merged_args(Func&& f, Tuple&& t, std::index_sequence<I...>, Args&&... args) {
+      return call_with(detail::unwrap(std::forward<Func>(f)),
+                       std::forward_as_tuple(unwrap(std::get<I>(t))..., std::forward<Args>(args)...),
+                       arg_seq<Tuple, Args...>());
+    }
   } // namespace detail
   
   
@@ -123,27 +149,6 @@ namespace com { namespace masaers { namespace blind {
     typedef std::tuple<typename std::decay<Args>::type...> args_type;
     func_type func_m;
     args_type args_m;
-    template<typename F, typename... AllArgs, std::size_t... I>
-    static inline constexpr auto call_with(F&& func,
-                                           std::tuple<AllArgs...> all_args,
-                                           std::index_sequence<I...>) ->
-    decltype(func(std::get<I>(all_args)...)) {
-      return func(std::get<I>(all_args)...);
-    }
-    template<typename F, typename BoundArgs, typename... LateArgs, std::size_t... I>
-    static inline constexpr auto merge_args_call(F&& func,
-                                                 BoundArgs&& bound_args,
-                                                 std::index_sequence<I...>,
-                                                 LateArgs&&... late_args) ->
-    decltype(call_with(std::forward<F>(func),
-                       std::forward_as_tuple(detail::unwrap(std::get<I>(bound_args))...,
-                                             std::forward<LateArgs>(late_args)...),
-                       detail::arg_seq<BoundArgs, LateArgs...>())) {
-      return call_with(std::forward<F>(func),
-                       std::forward_as_tuple(detail::unwrap(std::get<I>(bound_args))...,
-                                             std::forward<LateArgs>(late_args)...),
-                       detail::arg_seq<BoundArgs, LateArgs...>());
-    }
   public:
     inline blind_t(Func&& func, Args&&... args)
       : func_m(std::forward<Func>(func))
@@ -154,14 +159,12 @@ namespace com { namespace masaers { namespace blind {
     inline blind_t& operator=(const blind_t&) = default;
     inline blind_t& operator=(blind_t&&) = default;
     template<typename... LateArgs>
-    inline auto operator()(LateArgs&&... late_args) const ->
-    decltype(merge_args_call(detail::unwrap(func_m), args_m, std::make_index_sequence<sizeof...(Args)>(), std::forward<LateArgs>(late_args)...)) {
-      return merge_args_call(detail::unwrap(func_m), args_m, std::make_index_sequence<sizeof...(Args)>(), std::forward<LateArgs>(late_args)...);
+    inline decltype(auto) operator()(LateArgs&&... late_args) const {
+      return detail::call_with_merged_args(func_m, args_m, std::make_index_sequence<sizeof...(Args)>(), std::forward<LateArgs>(late_args)...);
     }
     template<typename... LateArgs>
-    inline auto operator()(LateArgs&&... late_args) ->
-    decltype(merge_args_call(detail::unwrap(func_m), args_m, std::make_index_sequence<sizeof...(Args)>(), std::forward<LateArgs>(late_args)...)) {
-      return merge_args_call(detail::unwrap(func_m), args_m, std::make_index_sequence<sizeof...(Args)>(), std::forward<LateArgs>(late_args)...);
+    inline decltype(auto) operator()(LateArgs&&... late_args) {
+      return detail::call_with_merged_args(func_m, args_m, std::make_index_sequence<sizeof...(Args)>(), std::forward<LateArgs>(late_args)...);
     }
   }; // blind_t
 
