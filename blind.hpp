@@ -5,7 +5,7 @@
 #include <iostream>
 
 namespace com { namespace masaers { namespace blind {
-  
+
   template<typename, typename...> class blind_t;
   /**
   This is the magic function that you will use to (dazzle and) blind.
@@ -14,15 +14,15 @@ namespace com { namespace masaers { namespace blind {
   inline auto blind(Func&& func, Args&&... args) {
     return blind_t<Func, Args...>(std::forward<Func>(func), std::forward<Args>(args)...);
   }
-  
+
   /**
   This macro takes a collection of functions with the same name and
   produces a single lambda closure that can be used to call any of them.
   */
   #define BLIND_FUNC(func_name) [](auto&&... x) -> decltype(auto) { return func_name (std::forward<decltype(x)>(x)...); }
-  
-  
-  
+
+
+
   namespace detail {
     // Correct template instantiateion requires reference_wrappers
     // to be unwrapped.
@@ -30,15 +30,6 @@ namespace com { namespace masaers { namespace blind {
     template<typename T> inline constexpr T& unwrap(      std::reference_wrapper<T>&  x) { return x.get(); }
     template<typename T> inline constexpr T& unwrap(      std::reference_wrapper<T>&& x) { return x.get(); }
     template<typename T> inline constexpr T  unwrap(                             T && x) { return std::forward<T>(x); }
-
-    // A version of std::get that is guaranteed to return the exact
-    // type stored in the tuple, which may very well involve
-    // the (elided) copy construction of stored values.
-    template<std::size_t I, typename Tuple>
-    inline constexpr typename std::tuple_element<I, typename std::remove_reference<Tuple>::type>::type
-    forward_get(Tuple&& t) {
-      return static_cast<typename std::tuple_element<I, typename std::remove_reference<Tuple>::type>::type>(std::get<I>(t));
-    }
 
     // Predicate (helper) to determine the offset of a bound argument
     // in the final argument list.
@@ -122,7 +113,7 @@ namespace com { namespace masaers { namespace blind {
     // Applies a tuple of arguments to a provided function in a given order.
     template<typename Func, typename Tuple, std::size_t... I>
     inline constexpr decltype(auto) call_with(Func&& f, Tuple&& t, std::index_sequence<I...>) {
-      return f(detail::forward_get<I>(t)...);
+      return f(std::get<I>(t)...);
     }
 
     // Merge a tuple of arguments possibly containing place holders with
@@ -160,11 +151,17 @@ namespace com { namespace masaers { namespace blind {
     inline blind_t& operator=(blind_t&&) = default;
     template<typename... LateArgs>
     inline decltype(auto) operator()(LateArgs&&... late_args) const {
-      return detail::call_with_merged_args(func_m, args_m, std::make_index_sequence<sizeof...(Args)>(), std::forward<LateArgs>(late_args)...);
+      return detail::call_with_merged_args(func_m,
+                                           args_m,
+                                           std::make_index_sequence<sizeof...(Args)>(),
+                                           std::forward<LateArgs>(late_args)...);
     }
     template<typename... LateArgs>
     inline decltype(auto) operator()(LateArgs&&... late_args) {
-      return detail::call_with_merged_args(func_m, args_m, std::make_index_sequence<sizeof...(Args)>(), std::forward<LateArgs>(late_args)...);
+      return detail::call_with_merged_args(func_m,
+                                           static_cast<const args_type>(args_m),
+                                           std::make_index_sequence<sizeof...(Args)>(),
+                                           std::forward<LateArgs>(late_args)...);
     }
   }; // blind_t
 
