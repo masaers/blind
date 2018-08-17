@@ -22,7 +22,7 @@ Now, if we wanted to have a function that sorted `vec` given a predicate (or in 
 ```c++
 auto sort_vec = bind(sort, begin(vec), end(vec));
 ```
-This will, however, not work, since `bind` needs to know the precis function to call, which isn't well defined until we know which sorting predicate we want to use. The precise function isn't know until call time. We can try to work around this using a variadic lambda that forwards its parameters to `sort`, then bind `begin` and `end` of `vec` to this new function, and call the bound function with our custom sorting predicate:
+This will, however, not work, since `bind` needs to know the precise function to call, which isn't well defined until we know which sorting predicate we want to use. The precise function isn't know until call time. We can try to work around this using a variadic lambda that forwards its parameters to `sort`, then bind `begin` and `end` of `vec` to this new function, and call the bound function with our custom sorting predicate:
 ```c++
 auto my_sort = [](auto&&... args) { sort(std::forward<decltype(args)>(args)); };
 auto sort_vec = bind(my_sort, begin(vec), end(vec));
