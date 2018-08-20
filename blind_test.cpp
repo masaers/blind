@@ -25,6 +25,12 @@ struct foo {
   int  operator()(int delta,       int&& x) const { return x + delta; }
 };
 
+struct foo2 {
+  template<typename T> void operator()(      T&  x, int delta) const { x += delta; }
+  template<typename T> T    operator()(const T&  x, int delta) const { return x + delta; }
+  template<typename T> T    operator()(      T&& x, int delta) const { return x + delta; }
+};
+
 int main(const int argc, const char** argv) {
   using namespace std;
   using namespace com::masaers::blind;
@@ -32,6 +38,14 @@ int main(const int argc, const char** argv) {
 
   {
     const auto f = blind(foo(), 1);
+    int i = 2;
+    int j = f(cref(i));
+    f(i);
+    assert(i == 3);
+    assert(j == 3);
+  }
+  {
+    const auto f = blind(foo2(), _1, 1);
     int i = 2;
     int j = f(cref(i));
     f(i);

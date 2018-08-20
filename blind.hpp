@@ -113,7 +113,7 @@ namespace com { namespace masaers { namespace blind {
     // Applies a tuple of arguments to a provided function in a given order.
     template<typename Func, typename Tuple, std::size_t... I>
     inline constexpr decltype(auto) call_with(Func&& f, Tuple&& t, std::index_sequence<I...>) {
-      return f(std::get<I>(t)...);
+      return f(unwrap(std::get<I>(t))...);
     }
 
     // Merge a tuple of arguments possibly containing place holders with
@@ -122,8 +122,8 @@ namespace com { namespace masaers { namespace blind {
     template<typename Func, typename Tuple, typename... Args, std::size_t... I>
     inline constexpr decltype(auto)
     call_with_merged_args(Func&& f, Tuple&& t, std::index_sequence<I...>, Args&&... args) {
-      return call_with(detail::unwrap(std::forward<Func>(f)),
-                       std::forward_as_tuple(unwrap(std::get<I>(t))..., std::forward<Args>(args)...),
+      return call_with(unwrap(std::forward<Func>(f)),
+                       std::forward_as_tuple(std::get<I>(t)..., std::forward<Args>(args)...),
                        arg_seq<Tuple, Args...>());
     }
   } // namespace detail
