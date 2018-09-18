@@ -31,6 +31,8 @@ struct foo2 {
   template<typename T> T    operator()(      T&& x, int delta) const { return x + delta; }
 };
 
+template<typename T, typename U> auto bar(const T& a, const U& b) { return a + b; }
+
 int main(const int argc, const char** argv) {
   using namespace std;
   using namespace com::masaers::blind;
@@ -104,6 +106,10 @@ int main(const int argc, const char** argv) {
       assert(*it++ == 4);
       assert(it == end(vec));
     }
+  }
+  {
+    auto f = blind(BLIND_FUNC(bar<int, int>), _1, 1);
+    assert(f(2) == 3);
   }
   return EXIT_SUCCESS;
 }

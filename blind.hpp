@@ -19,7 +19,7 @@ namespace com { namespace masaers { namespace blind {
   This macro takes a collection of functions with the same name and
   produces a single lambda closure that can be used to call any of them.
   */
-  #define BLIND_FUNC(func_name) [](auto&&... x) -> decltype(auto) { return func_name (std::forward<decltype(x)>(x)...); }
+  #define BLIND_FUNC(...) [](auto&&... x) -> decltype(auto) { return __VA_ARGS__ (std::forward<decltype(x)>(x)...); }
 
 
 
